@@ -89,4 +89,8 @@ if st.button("Generate DTMF Tone"):
     n = len(dtmf_tone)
     freq = np.fft.fftfreq(n, 1/8000)
     spectrum = np.abs(fft(dtmf_tone))
-    detected
+    detected_key = identify_key(freq[:n // 2], spectrum[:n // 2])
+
+    st.write(f"Detected DTMF Key: {detected_key}")
+
+# Note: No need for st.run()
