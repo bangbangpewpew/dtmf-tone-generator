@@ -99,7 +99,6 @@ st.title("DTMF Tone Generator and Analyzer")
 keys = st.multiselect(
     "Select DTMF keys (scrollable):", 
     options=list(dtmf_freqs.keys()), 
-    default=[''],  # Set a default key
     help="Select multiple DTMF keys by scrolling and clicking. The corresponding tones will be concatenated."
 )
 
