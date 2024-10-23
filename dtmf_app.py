@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
 from scipy.fft import fft
+import sounddevice as sd
 
 # DTMF frequency table
 dtmf_freqs = {
@@ -78,8 +79,11 @@ st.title("DTMF Tone Generator and Analyzer")
 key = st.selectbox("Select a DTMF key:", list(dtmf_freqs.keys()))
 duration = st.slider("Select duration (seconds):", 0.1, 1.0, 0.5)
 
-if st.button("Generate DTMF Tone"):
+if st.button("Generate and Play DTMF Tone"):
     dtmf_tone, time = generate_dtmf_tone(key, duration)
+
+    # Play the generated tone
+    sd.play(dtmf_tone, samplerate=8000)
 
     # Plot time-domain signal
     plot_time_domain(dtmf_tone, time)
