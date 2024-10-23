@@ -76,11 +76,15 @@ def plot_frequency_spectrum(signal, sampling_rate=8000):
     st.pyplot(plt)
 
 def identify_key(frequencies, magnitudes, tolerance=20):
-    """Identify the DTMF key based on the frequency spectrum."""
+    """Identify the DTMF key based on the frequency spectrum and display the identified peaks."""
     peaks_indices = np.argsort(magnitudes)[-2:]  # Get indices of two largest peaks
     detected_freqs = frequencies[peaks_indices]
     detected_freqs.sort()  # Sort to match DTMF structure
 
+    # Display the identified peaks
+    st.write(f"Identified frequency peaks: {detected_freqs[0]:.2f} Hz, {detected_freqs[1]:.2f} Hz")
+
+    # Match the frequencies with the DTMF frequency table
     for key, (low, high) in dtmf_freqs.items():
         # Check if the detected frequencies are within the tolerance range
         if (any(abs(low - freq) < tolerance for freq in detected_freqs) and
@@ -95,7 +99,7 @@ st.title("DTMF Tone Generator and Analyzer")
 keys = st.multiselect(
     "Select DTMF keys (scrollable):", 
     options=list(dtmf_freqs.keys()), 
-    default=['1'],  # Set a default key
+    default=[''],  # Set a default key
     help="Select multiple DTMF keys by scrolling and clicking. The corresponding tones will be concatenated."
 )
 
@@ -129,6 +133,8 @@ if st.button("Generate DTMF Tone"):
         n = len(total_tone)
         freq = np.fft.fftfreq(n, 1/8000)
         spectrum = np.abs(fft(total_tone))
+        
+        # Display identified frequency peaks and detected key
         detected_key = identify_key(freq[:n // 2], spectrum[:n // 2])
 
         st.write(f"Detected DTMF Key: {detected_key}")
