@@ -19,11 +19,10 @@ dtmf_freqs = {
     '#': (941, 1477)
 }
 
-
 def generate_dtmf_tone(key, duration=0.5, sampling_rate=8000):
     if key not in dtmf_freqs:
         raise ValueError("Invalid DTMF key.")
-
+    
     # Get corresponding frequencies
     low_freq, high_freq = dtmf_freqs[key]
 
@@ -38,7 +37,6 @@ def generate_dtmf_tone(key, duration=0.5, sampling_rate=8000):
     dtmf_tone = low_tone + high_tone
     return dtmf_tone, t
 
-
 def plot_time_domain(signal, time):
     plt.figure(figsize=(10, 4))
     plt.plot(time[:100], signal[:100])
@@ -48,10 +46,9 @@ def plot_time_domain(signal, time):
     plt.grid()
     st.pyplot(plt)
 
-
 def plot_frequency_spectrum(signal, sampling_rate=8000):
     n = len(signal)
-    freq = np.fft.fftfreq(n, 1 / sampling_rate)
+    freq = np.fft.fftfreq(n, 1/sampling_rate)
     spectrum = np.abs(fft(signal))
 
     plt.figure(figsize=(10, 4))
@@ -62,7 +59,6 @@ def plot_frequency_spectrum(signal, sampling_rate=8000):
     plt.grid()
     st.pyplot(plt)
 
-
 def identify_key(frequencies, magnitudes):
     peaks_indices = np.argsort(magnitudes)[-2:]  # Get indices of two largest peaks
     detected_freqs = frequencies[peaks_indices]
@@ -72,7 +68,6 @@ def identify_key(frequencies, magnitudes):
         if (low in detected_freqs) and (high in detected_freqs):
             return key
     return "Unknown Key"
-
 
 # Streamlit UI
 st.title("DTMF Tone Generator and Analyzer")
@@ -92,12 +87,6 @@ if st.button("Generate DTMF Tone"):
 
     # Apply DFT and identify key
     n = len(dtmf_tone)
-    freq = np.fft.fftfreq(n, 1 / 8000)
+    freq = np.fft.fftfreq(n, 1/8000)
     spectrum = np.abs(fft(dtmf_tone))
-    detected_key = identify_key(freq[:n // 2], spectrum[:n // 2])
-
-    st.write(f"Detected DTMF Key: {detected_key}")
-
-# Main guard
-if __name__ == "__main__":
-    st.run()
+    detected
