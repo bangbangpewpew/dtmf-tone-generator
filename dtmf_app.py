@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
 from scipy.fft import fft
-import sounddevice as sd
+import wave
 
 # DTMF frequency table
 dtmf_freqs = {
@@ -36,7 +36,18 @@ def generate_dtmf_tone(key, duration=0.5, sampling_rate=8000):
 
     # Create final DTMF tone
     dtmf_tone = low_tone + high_tone
-    return dtmf_tone, t
+    return dtmf_tone
+
+def save_wav_file(signal, filename, samplerate=8000):
+    # Normalize to 16-bit range
+    scaled_signal = np.int16(signal / np.max(np.abs(signal)) * 32767)
+
+    # Write to WAV file
+    with wave.open(filename, 'wb') as wf:
+        wf.setnchannels(1)  # Mono
+        wf.setsampwidth(2)  # 16 bits
+        wf.setframerate(samplerate)
+        wf.writeframes(scaled_signal.tobytes())
 
 def plot_time_domain(signal, time):
     plt.figure(figsize=(10, 4))
@@ -79,14 +90,18 @@ st.title("DTMF Tone Generator and Analyzer")
 key = st.selectbox("Select a DTMF key:", list(dtmf_freqs.keys()))
 duration = st.slider("Select duration (seconds):", 0.1, 1.0, 0.5)
 
-if st.button("Generate and Play DTMF Tone"):
-    dtmf_tone, time = generate_dtmf_tone(key, duration)
+if st.button("Generate DTMF Tone"):
+    dtmf_tone = generate_dtmf_tone(key, duration)
 
-    # Play the generated tone
-    sd.play(dtmf_tone, samplerate=8000)
+    # Save the generated tone as a WAV file
+    wav_filename = "dtmf_tone.wav"
+    save_wav_file(dtmf_tone, wav_filename)
+
+    # Use Streamlit's audio function to play the sound
+    st.audio(wav_filename)
 
     # Plot time-domain signal
-    plot_time_domain(dtmf_tone, time)
+    plot_time_domain(dtmf_tone, np.linspace(0, duration, int(8000 * duration), endpoint=False))
 
     # Plot frequency spectrum
     plot_frequency_spectrum(dtmf_tone)
