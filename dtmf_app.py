@@ -59,13 +59,15 @@ def plot_frequency_spectrum(signal, sampling_rate=8000):
     plt.grid()
     st.pyplot(plt)
 
-def identify_key(frequencies, magnitudes):
+def identify_key(frequencies, magnitudes, tolerance=20):
     peaks_indices = np.argsort(magnitudes)[-2:]  # Get indices of two largest peaks
     detected_freqs = frequencies[peaks_indices]
     detected_freqs.sort()  # Sort to match DTMF structure
 
     for key, (low, high) in dtmf_freqs.items():
-        if (low in detected_freqs) and (high in detected_freqs):
+        # Check if the detected frequencies are within the tolerance range
+        if (any(abs(low - freq) < tolerance for freq in detected_freqs) and
+                any(abs(high - freq) < tolerance for freq in detected_freqs)):
             return key
     return "Unknown Key"
 
@@ -92,5 +94,3 @@ if st.button("Generate DTMF Tone"):
     detected_key = identify_key(freq[:n // 2], spectrum[:n // 2])
 
     st.write(f"Detected DTMF Key: {detected_key}")
-
-# Note: No need for st.run()
