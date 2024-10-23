@@ -91,8 +91,13 @@ def identify_key(frequencies, magnitudes, tolerance=20):
 # Streamlit UI
 st.title("DTMF Tone Generator and Analyzer")
 
-# User input for multiple DTMF keys
-keys = st.text_input("Enter DTMF keys (e.g., 123*#):", value="123")
+# Scrollable multiselect for DTMF keys
+keys = st.multiselect(
+    "Select DTMF keys (scrollable):", 
+    options=list(dtmf_freqs.keys()), 
+    default=['1'],  # Set a default key
+    help="Select multiple DTMF keys by scrolling and clicking. The corresponding tones will be concatenated."
+)
 
 duration = st.slider("Select duration per tone (seconds):", 0.1, 1.0, 0.5)
 
@@ -102,8 +107,6 @@ if st.button("Generate DTMF Tone"):
         if key in dtmf_freqs:
             dtmf_tone = generate_dtmf_tone(key, duration)
             total_tone = np.concatenate([total_tone, dtmf_tone])
-        else:
-            st.write(f"Invalid key: {key}. Ignoring.")
     
     if len(total_tone) > 0:
         # Save the generated tone as a WAV file
