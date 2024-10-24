@@ -25,26 +25,18 @@ def generate_dtmf_tone(key, duration=0.5, sampling_rate=8000):
     if key not in dtmf_freqs:
         raise ValueError("Invalid DTMF key.")
     
-    # Get corresponding frequencies
-    low_freq, high_freq = dtmf_freqs[key]
+    low_freq, high_freq = dtmf_freqs[key]  # Get corresponding frequencies
+    t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)  # Time vector
 
-    # Create time vector
-    t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
-
-    # Generate sine waves
+    # Generate sine waves for low and high frequencies
     low_tone = np.sin(2 * np.pi * low_freq * t)
     high_tone = np.sin(2 * np.pi * high_freq * t)
 
-    # Create final DTMF tone
-    dtmf_tone = low_tone + high_tone
-    return dtmf_tone
+    return low_tone + high_tone  # Return combined DTMF tone
 
 def save_wav_file(signal, filename, samplerate=8000):
     """Save the generated DTMF tone as a WAV file."""
-    # Normalize to 16-bit range
-    scaled_signal = np.int16(signal / np.max(np.abs(signal)) * 32767)
-
-    # Write to WAV file
+    scaled_signal = np.int16(signal / np.max(np.abs(signal)) * 32767)  # Normalize to 16-bit
     with wave.open(filename, 'wb') as wf:
         wf.setnchannels(1)  # Mono
         wf.setsampwidth(2)  # 16 bits
@@ -81,12 +73,10 @@ def identify_key(frequencies, magnitudes, tolerance=20):
     detected_freqs = frequencies[peaks_indices]
     detected_freqs.sort()  # Sort to match DTMF structure
 
-    # Display the identified peaks
-    st.write(f"Identified frequency peaks: {detected_freqs[0]:.2f} Hz, {detected_freqs[1]:.2f} Hz")
+    st.write(f"Identified frequency peaks: {detected_freqs[0]:.2f} Hz, {detected_freqs[1]:.2f} Hz")  # Display peaks
 
     # Match the frequencies with the DTMF frequency table
     for key, (low, high) in dtmf_freqs.items():
-        # Check if the detected frequencies are within the tolerance range
         if (any(abs(low - freq) < tolerance for freq in detected_freqs) and
                 any(abs(high - freq) < tolerance for freq in detected_freqs)):
             return key
@@ -95,31 +85,30 @@ def identify_key(frequencies, magnitudes, tolerance=20):
 # Streamlit UI
 st.title("DTMF Tone Generator and Analyzer")
 
-# Scrollable multiselect for DTMF keys
+# Multiselect for DTMF keys with a scrollable interface
 keys = st.multiselect(
     "Select DTMF keys (scrollable):", 
     options=list(dtmf_freqs.keys()), 
     help="Select multiple DTMF keys by scrolling and clicking. The corresponding tones will be concatenated."
 )
 
+# Slider for tone duration
 duration = st.slider("Select duration per tone (seconds):", 0.1, 1.0, 0.5)
 
+# Button to generate DTMF tone
 if st.button("Generate DTMF Tone"):
-    total_tone = np.array([])  # Empty array to hold the final concatenated signal
+    total_tone = np.array([])  # Empty array to store the concatenated signal
     for key in keys:
-        if key in dtmf_freqs:
-            dtmf_tone = generate_dtmf_tone(key, duration)
-            total_tone = np.concatenate([total_tone, dtmf_tone])
-    
+        dtmf_tone = generate_dtmf_tone(key, duration)  # Generate tone for each key
+        total_tone = np.concatenate([total_tone, dtmf_tone])
+
     if len(total_tone) > 0:
-        # Save the generated tone as a WAV file
+        # Save and play the tone
         wav_filename = "dtmf_tone.wav"
         save_wav_file(total_tone, wav_filename)
-
-        # Use Streamlit's audio function to play the sound
         st.audio(wav_filename)
 
-        # Create a time vector for plotting
+        # Time vector for plotting
         time_vector = np.linspace(0, len(total_tone) / 8000, len(total_tone), endpoint=False)
         
         # Plot time-domain signal
@@ -132,10 +121,9 @@ if st.button("Generate DTMF Tone"):
         n = len(total_tone)
         freq = np.fft.fftfreq(n, 1/8000)
         spectrum = np.abs(fft(total_tone))
-        
+
         # Display identified frequency peaks and detected key
         detected_key = identify_key(freq[:n // 2], spectrum[:n // 2])
-
         st.write(f"Detected DTMF Key: {detected_key}")
     else:
-        st.write("No valid keys entered.")
+        st.write("No valid keys selected.")
